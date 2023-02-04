@@ -1,6 +1,12 @@
 from bs4 import BeautifulSoup
-import tkinter
+import tkinter as tk
 from tkinter import filedialog
+
+def select_file():
+    root = tk.Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename()
+    return file_path
 
 def parse_answer_key(filename):
     with open(filename) as f:
@@ -56,13 +62,10 @@ def parse_response_sheet(filename):
 
 def calculate_score(key, values):
     correct = 0
-    
-    
-    def select_file():
-    root = tkinter.Tk()
-    root.withdraw()
-    file_path = filedialog.askopenfilename()
-    return file_path
+    for question_id in key.keys():
+        if question_id in values.keys() and key[question_id] == values[question_id]:
+            correct += 1
+    return correct
 
 answer_key_file = select_file()
 response_sheet_file = select_file()
@@ -70,4 +73,4 @@ answer_key = parse_answer_key(answer_key_file)
 response_sheet = parse_response_sheet(response_sheet_file)
 score = calculate_score(answer_key, response_sheet)
 print("Your score is:", score)
-
+``
