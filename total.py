@@ -1,6 +1,6 @@
+from bs4 import BeautifulSoup
 import tkinter as tk
 from tkinter import filedialog
-from bs4 import BeautifulSoup
 
 def select_file():
     root = tk.Tk()
@@ -9,17 +9,17 @@ def select_file():
     return file_path
 
 def parse_answer_key(filename):
-    with open(filename) as f:
+    with open(filename, 'r') as f:
         soup = BeautifulSoup(f, "html.parser")
     table = soup.find("table", {"id": "ctl00_LoginContent_grAnswerKey"})
     data = []
     for row in table.find_all("tr"):
         cells = row.find_all("td")
         if len(cells) > 0:
-            data.append([cell.text for cell in cells])
+            data.append([cell.text.strip() for cell in cells])
     key = {}
     for arr in data:
-        key[arr[2].strip('\n')] = arr[3].strip('\n')
+        key[arr[2].strip()] = arr[3].strip()
     return key
 
 def parse_response_sheet(filename):
@@ -52,13 +52,17 @@ def parse_response_sheet(filename):
             answer_id = question[3+chosen*2]
             values[question_id] = answer_id
         if 'SA' in question:
-            answer = answers[counter]
-            if 'Answered' in question:
-                question_id = question[3]
-                answer_id = answer[5]
-                values[question_id] = answer_id
+            if counter < len(answers):
+                answer = answers[counter]
+                if 'Answered' in question:
+                    question_id = question[3]
+                    answer_id = answer[5]
+                    values[question_id] = answer_id
+            else:
+                print("Answer not found for question:", question[3])
         counter += 1
     return values
+
 
 def calculate_score(key, values):
     correct = 0
@@ -71,5 +75,4 @@ answer_key_file = select_file()
 response_sheet_file = select_file()
 answer_key = parse_answer_key(answer_key_file)
 response_sheet = parse_response_sheet(response_sheet_file)
-score = calculate_score(answer_key, response_sheet)
-print("Your score is:", score)
+score = calculate_score(answer_key,
